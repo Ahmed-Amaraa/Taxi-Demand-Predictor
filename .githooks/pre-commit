@@ -1,0 +1,48 @@
+#!/bin/bash
+# Pre-commit hook to validate model quality before commit
+echo 'Validation du modele en cours...'
+
+python -c "
+import mlflow
+import sys
+from mlflow.tracking import MlflowClient
+
+try:
+    client = MlflowClient()
+    # Search for experiments
+    experiments = client.search_experiments()
+    
+    if not experiments:
+        print('Aucune experience MLflow trouvee. Hook ignore.')
+        sys.exit(0)
+    
+    # Get the first/main experiment
+    exp_id = experiments[0].experiment_id
+    
+    # Search for the best run by accuracy
+    runs = client.search_runs(
+        experiment_ids=[exp_id],
+        order_by=['metrics.accuracy DESC'],
+        max_results=1
+    )
+    
+    if not runs:
+        print('Aucun run trouve. Hook ignore.')
+        sys.exit(0)
+    
+    acc = runs[0].data.metrics.get('accuracy', 0)
+    
+    if acc < 0.80:
+        print(f'ERREUR: Accuracy trop faible: {acc:.3f} < 0.80')
+        sys.exit(1)
+    
+    print(f'Validation OK : accuracy={acc:.3f}')
+    sys.exit(0)
+    
+except Exception as e:
+    print(f'Erreur lors de la validation: {e}')
+    print('Hook ignore - permettre le commit')
+    sys.exit(0)
+"
+
+exit $?

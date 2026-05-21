@@ -4,17 +4,17 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile.backend
+      dockerfile: src/Dockerfile.backend
     ports:
-      - "8000:8000"
+      - "5000:5000"
     environment:
       - API_HOST=0.0.0.0
-      - API_PORT=8000
+      - API_PORT=5000
       - API_DEBUG=False
+      - FLASK_ENV=production
     volumes:
-      - ./src/api:/app/api
+      - ./src:/app/src
       - ./models:/app/models
-    command: python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build:
@@ -25,7 +25,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:5000
     volumes:
       - ./frontend:/app
       - /app/node_modules

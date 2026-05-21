@@ -4,15 +4,15 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install dependencies
-COPY src/api/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application
-COPY src/api ./api
+COPY src ./src
 COPY models ./models
 
 # Expose port
-EXPOSE 8000
+EXPOSE 5000
 
 # Run the application
-CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "src/app.py"]
